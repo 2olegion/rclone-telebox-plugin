@@ -13,22 +13,30 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.21
+          go-version: "1.21"
           check-latest: true
-      
+
       - name: Build rclone
         run: |
           git clone --depth 1 --branch v1.69.1 https://github.com/rclone/rclone
           cd rclone
-          go build -o /usr/local/bin/rclone
-      
-      - name: Build plugin
+          go build -o "${GITHUB_WORKSPACE}/rclone-bin"
+
+      - name: Fix Go module path (use local rclone)
         run: |
-          go mod edit -replace "github.com/rclone/rclone=${{ github.workspace }}/rclone"
+          go mod edit -replace "github.com/rclone/rclone=${GITHUB_WORKSPACE}/rclone"
+          go mod tidy
+
+      - name: Build Telebox plugin
+        run: |
           go build -buildmode=plugin -o librcloneplugin_telebox.so
-      
-      - name: Setup environment
-        run: echo "RCLONE_PLUGIN_PATH=${{ github.workspace }}" >> $GITHUB_ENV
-      
-      - name: Test rclone plugin integration
-        run: rclone help backend telebox
+          ls -lah
+
+      - name: Setup Rclone plugin path
+        run: |
+          echo "RCLONE_PLUGIN_PATH=${GITHUB_WORKSPACE}" >> $GITHUB_ENV
+
+      - name: Test plugin with rclone
+        run: |
+          chmod +x ./rclone-bin
+          ./rclone-bin help backend telebox
