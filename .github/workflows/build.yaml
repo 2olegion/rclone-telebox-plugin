@@ -40,3 +40,19 @@ jobs:
         run: |
           chmod +x ./rclone-bin
           ./rclone-bin help backend telebox
+
+      # -----------------------------
+      # 🚀 ARTIFACT UPLOAD SECTION
+      # -----------------------------
+
+      - name: Upload Plugin Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: librcloneplugin_telebox
+          path: librcloneplugin_telebox.so
+
+      - name: Upload rclone binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: rclone-bin
+          path: rclone-bin
